@@ -1,15 +1,25 @@
 # frozen_string_literal: true
 
-require "statement_timeout"
+require 'statement_timeout'
+require 'temporary_tables'
+require 'sql_matchers'
+require 'active_support'
+require 'active_record'
+require 'logger'
+
+ActiveRecord::Base.logger = Logger.new(STDOUT) if ENV.key?('DEBUG')
+ActiveRecord::Base.establish_connection(
+  ENV.fetch('DATABASE_URL') { 'sqlite3::memory:' },
+)
 
 RSpec.configure do |config|
-  # Enable flags like --only-failures and --next-failure
-  config.example_status_persistence_file_path = ".rspec_status"
+  config.include TemporaryTables::Methods
+  config.include SqlMatchers::Methods
 
-  # Disable RSpec exposing methods globally on `Module` and `main`
+  config.expect_with(:rspec) { _1.syntax = :expect }
   config.disable_monkey_patching!
 
-  config.expect_with :rspec do |c|
-    c.syntax = :expect
+  config.around :each, :unprepared_statements do |example|
+    ActiveRecord::Base.connection.unprepared_statement { example.run }
   end
 end
