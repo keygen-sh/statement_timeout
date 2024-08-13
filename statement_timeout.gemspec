@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative "lib/statement_timeout/version"
+require_relative 'lib/statement_timeout/version'
 
 Gem::Specification.new do |spec|
   spec.name        = 'statement_timeout'
