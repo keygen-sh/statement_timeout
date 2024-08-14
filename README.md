@@ -54,11 +54,6 @@ Tag.statement_timeout 6.hours do |conn|
 end
 ```
 
-## Future
-
-Right now, the gem only supports RSpec, but we're open to pull requests that
-extend the functionality to other testing frameworks.
-
 ## Supported databases
 
 We currently support PostgreSQL. We'd love contributions that add MySQL,
