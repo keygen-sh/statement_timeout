@@ -24,6 +24,7 @@ module StatementTimeout
   module PostgreSQLAdapterExtension
     def supports_statement_timeout? = true
     def statement_timeout           = @statement_timeout ||= query_value("SHOW statement_timeout")
+
     def statement_timeout=(timeout)
       @statement_timeout = nil
 

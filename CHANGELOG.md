@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## v1.1.0
 
 - Add support for transaction `:mode`, useful in cases where a PgBouncer is in
   sitting front of Postgres and in transaction mode. In this case, the default
