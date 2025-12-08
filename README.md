@@ -44,7 +44,7 @@ $ gem install statement_timeout
 StatementTimeout.configure do |config|
   # When using a connection pooler like PgBouncer while in transaction mode, it
   # is required that you change the default mode from :session to :transaction
-  # otherwise the statement timeouts may be SET on the right connection.
+  # otherwise the statement timeouts may be SET on the wrong connection.
   config.default_mode = :transaction
 end
 ```
