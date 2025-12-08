@@ -64,7 +64,7 @@ Post.statement_timeout 10.minutes do |conn|
   conn.transaction { archive_old_posts }
 end
 
-Tag.statement_timeout 6.hours do |conn|
+Tag.statement_timeout 6.hours, mode: :session do |conn|
   conn.execute 'VACUUM ANALYZE tags'
 end
 ```
