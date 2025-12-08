@@ -25,13 +25,17 @@ RSpec.describe StatementTimeout do
         statement_timeout_was = connection.statement_timeout
 
         expect { subject.statement_timeout(1.minute) { subject.unscoped.take } }.to(
-          match_queries(count: 2) do |queries|
+          match_queries(count: 3) do |queries|
             expect(queries.first).to eq <<~SQL.squish
               SET LOCAL statement_timeout = 60000
             SQL
 
             expect(queries.second).to eq <<~SQL.squish
               SELECT "#{table_name}".* FROM "#{table_name}" LIMIT 1
+            SQL
+
+            expect(queries.third).to eq <<~SQL.squish
+              SET LOCAL statement_timeout = '#{statement_timeout_was}'
             SQL
           end
         )
@@ -45,13 +49,17 @@ RSpec.describe StatementTimeout do
         statement_timeout_was = connection.statement_timeout
 
         expect { subject.statement_timeout(1000) { subject.unscoped.take } }.to(
-          match_queries(count: 2) do |queries|
+          match_queries(count: 3) do |queries|
             expect(queries.first).to eq <<~SQL.squish
               SET LOCAL statement_timeout = 1000
             SQL
 
             expect(queries.second).to eq <<~SQL.squish
               SELECT "#{table_name}".* FROM "#{table_name}" LIMIT 1
+            SQL
+
+            expect(queries.third).to eq <<~SQL.squish
+              SET LOCAL statement_timeout = '#{statement_timeout_was}'
             SQL
           end
         )
@@ -65,13 +73,17 @@ RSpec.describe StatementTimeout do
         statement_timeout_was = connection.statement_timeout
 
         expect { subject.statement_timeout(1000.5) { subject.unscoped.take } }.to(
-          match_queries(count: 2) do |queries|
+          match_queries(count: 3) do |queries|
             expect(queries.first).to eq <<~SQL.squish
               SET LOCAL statement_timeout = 1000.5
             SQL
 
             expect(queries.second).to eq <<~SQL.squish
               SELECT "#{table_name}".* FROM "#{table_name}" LIMIT 1
+            SQL
+
+            expect(queries.third).to eq <<~SQL.squish
+              SET LOCAL statement_timeout = '#{statement_timeout_was}'
             SQL
           end
         )
@@ -85,13 +97,17 @@ RSpec.describe StatementTimeout do
         statement_timeout_was = connection.statement_timeout
 
         expect { subject.statement_timeout('1s') { subject.unscoped.take } }.to(
-          match_queries(count: 2) do |queries|
+          match_queries(count: 3) do |queries|
             expect(queries.first).to eq <<~SQL.squish
               SET LOCAL statement_timeout = '1s'
             SQL
 
             expect(queries.second).to eq <<~SQL.squish
               SELECT "#{table_name}".* FROM "#{table_name}" LIMIT 1
+            SQL
+
+            expect(queries.third).to eq <<~SQL.squish
+              SET LOCAL statement_timeout = '#{statement_timeout_was}'
             SQL
           end
         )
@@ -166,7 +182,7 @@ RSpec.describe StatementTimeout do
     it 'should not support vacuum' do
       expect { subject.statement_timeout('1s') { connection.execute("VACUUM ANALYZE #{table_name}") } }
         .to raise_error { |err|
-          expect(err.message).to match /vacuum cannot run inside a transaction block/i
+          expect(err.message).to match /current transaction is aborted/i
         }
     end
   end
@@ -287,8 +303,10 @@ RSpec.describe StatementTimeout do
 
     context 'with :mode keyword' do
       it 'should set a temporary :mode for statement timeout', :unprepared_statements do
+        statement_timeout_was = connection.statement_timeout
+
         expect { subject.statement_timeout('1s', mode: :transaction) { subject.unscoped.take } }.to(
-          match_queries(count: 2) do |queries|
+          match_queries(count: 3) do |queries|
             expect(queries.first).to eq <<~SQL.squish
               SET LOCAL statement_timeout = '1s'
             SQL
@@ -296,8 +314,14 @@ RSpec.describe StatementTimeout do
             expect(queries.second).to eq <<~SQL.squish
               SELECT "#{table_name}".* FROM "#{table_name}" LIMIT 1
             SQL
+
+            expect(queries.third).to eq <<~SQL.squish
+              SET LOCAL statement_timeout = '#{statement_timeout_was}'
+            SQL
           end
         )
+
+        expect(connection.statement_timeout).to eq statement_timeout_was
       end
     end
 

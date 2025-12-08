@@ -52,9 +52,11 @@ module StatementTimeout
         case mode
         when :transaction
           connection.transaction do
-            connection.local_statement_timeout = timeout
+            statement_timeout_was, connection.local_statement_timeout = connection.statement_timeout, timeout
 
             yield connection
+          ensure
+            connection.local_statement_timeout = statement_timeout_was
           end
         when :session
           begin
