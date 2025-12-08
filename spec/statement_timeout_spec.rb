@@ -171,6 +171,10 @@ RSpec.describe StatementTimeout do
       expect(subject.statement_timeout('1s') { connection.execute('select 1 as value')[0]['value'] }).to eq 1
     end
 
+    it 'should begin a transaction' do
+      expect(subject.statement_timeout('1s') { |conn| conn.current_transaction.open? }).to be true
+    end
+
     it 'should support transaction' do
       expect { subject.statement_timeout('1s') { subject.transaction { subject.unscoped.take } } }
         .to_not raise_error
@@ -345,6 +349,10 @@ RSpec.describe StatementTimeout do
 
     it 'should return a value' do
       expect(subject.statement_timeout('1s') { connection.execute('select 1 as value')[0]['value'] }).to eq 1
+    end
+
+    it 'should not begin a transaction' do
+      expect(subject.statement_timeout('1s') { |conn| conn.current_transaction.open? }).to be false
     end
 
     it 'should support transaction' do
