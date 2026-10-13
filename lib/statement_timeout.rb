@@ -3,10 +3,6 @@
 require 'active_support'
 require 'active_record'
 
-require_relative 'statement_timeout/configuration'
-require_relative 'statement_timeout/version'
-require_relative 'statement_timeout/railtie'
-
 module StatementTimeout
   module AbstractAdapterExtension
     def supports_statement_timeout? = false
@@ -83,4 +79,8 @@ module StatementTimeout
     yield config
   end
 end
+
+require_relative 'statement_timeout/configuration'
+require_relative 'statement_timeout/version'
+require_relative 'statement_timeout/railtie'
 
